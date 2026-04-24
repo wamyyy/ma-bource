@@ -1625,22 +1625,7 @@ body::before {
       <div class="login-logo-shine"></div>
     </div>
     <div class="login-brand">MA-BOURSE</div>
-    <div class="login-tagline">MA-BOURSE Investment<br>Bourse de Casablanca</div>
 
-    <div class="login-features">
-      <div class="login-feature">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-        Cours en direct
-      </div>
-      <div class="login-feature">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-        Favoris &amp; Alertes
-      </div>
-      <div class="login-feature">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
-        Mon Portefeuille
-      </div>
-    </div>
 
     <div class="login-form">
       <input type="email" id="login-email" class="login-input" placeholder="Adresse e-mail">
@@ -1648,7 +1633,21 @@ body::before {
       <button class="login-btn-primary" id="btn-login-email">Se Connecter</button>
     </div>
 
-    <div class="login-divider"><span>ou continuer avec</span></div>
+    <div style="display:flex;align-items:center;gap:12px;margin:18px 0 6px;">
+      <div style="flex:1;height:1px;background:var(--border2);"></div>
+      <span style="color:var(--text3);font-size:12px;font-weight:600;letter-spacing:0.08em;white-space:nowrap;">OU</span>
+      <div style="flex:1;height:1px;background:var(--border2);"></div>
+    </div>
+
+    <button class="login-btn-register" id="btn-register" style="
+      width:100%;padding:15px;border-radius:var(--radius);border:2px solid var(--green);
+      background:transparent;color:var(--green);font-family:inherit;font-size:15px;
+      font-weight:700;letter-spacing:0.04em;cursor:pointer;display:flex;align-items:center;
+      justify-content:center;gap:10px;transition:all 0.2s;margin-bottom:6px;
+    " onmouseover="this.style.background='var(--green-dim)'" onmouseout="this.style.background='transparent'">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+      Créer un compte
+    </button>
 
     <button class="login-btn-secondary" id="btn-login-google">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
@@ -1659,9 +1658,6 @@ body::before {
       </svg>
       Google
     </button>
-
-    <div class="login-skip" id="btn-login-demo">Continuer sans compte →</div>
-    <div class="login-disclaimer">Données simulées · 78 actions cotées</div>
   </div>
 </div>
 
