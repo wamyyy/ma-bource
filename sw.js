@@ -13,8 +13,11 @@ const STATIC_URLS = [
   '/js/UIController.js',
   '/js/Constants.js',
   '/js/Utility.js',
+  '/js/ChartController.js',
   '/manifest.json',
   'https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500;700&display=swap',
+  'https://cdn.jsdelivr.net/npm/chart.js',
+  'https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js'
 ];
 
 // ── Install: pre-cache all static resources ────────────
@@ -37,7 +40,6 @@ self.addEventListener('activate', event => {
 
 // ── Fetch: Cache-First strategy ───────────────────────
 self.addEventListener('fetch', event => {
-  // Only handle GET requests
   if (event.request.method !== 'GET') return;
 
   event.respondWith(
@@ -45,7 +47,6 @@ self.addEventListener('fetch', event => {
       if (cached) return cached;
       return fetch(event.request)
         .then(response => {
-          // Cache successful responses for static assets
           if (response && response.status === 200 && response.type === 'basic') {
             const clone = response.clone();
             caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
@@ -53,11 +54,51 @@ self.addEventListener('fetch', event => {
           return response;
         })
         .catch(() => {
-          // Offline fallback: return cached index.html for navigation requests
           if (event.request.mode === 'navigate') {
             return caches.match('/index.html');
           }
         });
+    })
+  );
+});
+
+// ── Background Polling / Push Notifications ───────────
+let currentAlerts = {};
+
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'UPDATE_ALERTS') {
+    currentAlerts = event.data.alerts;
+    
+    // DEMO LOGIC: Simulate hitting the price target after 5 seconds to show the notification
+    const tickers = Object.keys(currentAlerts);
+    if (tickers.length > 0) {
+      setTimeout(() => {
+        const t = tickers[0];
+        const a = currentAlerts[t];
+        if (a && a.active) {
+          self.registration.showNotification(`Alerte de Prix: ${t}`, {
+            body: `Le cours de ${t} a atteint votre seuil de ${a.threshold} MAD.`,
+            icon: 'https://ui-avatars.com/api/?name=Wamy&background=34d378&color=ffffff', // Demo icon
+            vibrate: [200, 100, 200],
+            data: { ticker: t }
+          });
+        }
+      }, 5000);
+    }
+  }
+});
+
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  // Focus the window (or open it if closed)
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(windowClients => {
+      const client = windowClients.find(c => c.visibilityState === 'visible') || windowClients[0];
+      if (client) {
+        return client.focus();
+      } else {
+        return clients.openWindow('/');
+      }
     })
   );
 });

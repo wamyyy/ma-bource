@@ -8,10 +8,15 @@ window.Utility = {
    * Calculates the net cost of a transaction including brokerage fees and VAT (10%).
    * Net = (Price × Qty) + Brokerage Fees (incl VAT).
    */
+  /**
+   * Calculates the net cost of a transaction including brokerage fees and VAT (10%).
+   */
   calculateNetCost: function(price, qty, brokerageFeePercentage) {
-    const grossAmount = price * qty;
+    const p = price || 0;
+    const q = qty || 0;
+    const grossAmount = p * q;
     const brokerageFees = grossAmount * brokerageFeePercentage;
-    const vat = brokerageFees * 0.10; // 10% VAT on fees
+    const vat = brokerageFees * 0.10; 
     const bourseAmount = grossAmount * 0.001;
     return {
       grossAmount,
@@ -21,6 +26,26 @@ window.Utility = {
       totalFees: brokerageFees + vat + bourseAmount,
       total: grossAmount + brokerageFees + vat + bourseAmount
     };
+  },
+
+  /**
+   * Converts large numbers into readable compact strings (K, M, B)
+   */
+  formatCompactNumber: function(num) {
+    if (!num || isNaN(num)) return '0';
+    if (num >= 1000000000) return (num / 1000000000).toFixed(2) + 'B';
+    if (num >= 1000000) return (num / 1000000).toFixed(2) + 'M';
+    if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+    return num.toString();
+  },
+
+  /**
+   * Calculates position percentage in a range [low, high]
+   */
+  getRangePercentage: function(current, low, high) {
+    if (!low || !high || high === low) return 0;
+    const pct = ((current - low) / (high - low)) * 100;
+    return Math.min(100, Math.max(0, pct));
   },
 
   /**

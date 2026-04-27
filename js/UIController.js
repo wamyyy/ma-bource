@@ -28,6 +28,12 @@ export class UIController {
     const suspended = stock.isSuspended();
     const dir       = suspended ? 'neutral' : trend;
 
+    let hasAlert = false;
+    try {
+      const alerts = JSON.parse(localStorage.getItem('wamy_price_alerts') || '{}');
+      hasAlert = alerts[stock.ticker] && alerts[stock.ticker].active;
+    } catch(e) {}
+
     return `
       <div class="stock-row ${dir} fade-in${suspended ? ' suspended' : ''}"
            data-ticker="${stock.ticker}" role="button" tabindex="0"
@@ -47,21 +53,33 @@ export class UIController {
           <div class="stock-change ${dir}" aria-label="${suspended ? 'Suspendu' : (up ? 'Hausse' : 'Baisse') + ' ' + Math.abs(stock.change).toFixed(2) + '%'}">
             ${suspended
               ? '<span style="color:var(--text3);font-size:10px;">Suspendu</span>'
-              : `<span class="arrow-icon" aria-hidden="true">${up ? '▲' : '▼'}</span> ${Math.abs(stock.change).toFixed(2)}%`}
+              : (stock.change === 0 ? '—' : `
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="vertical-align:middle;margin-right:2px;">
+                  ${up ? '<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>' : '<polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/>'}
+                </svg>
+                ${Math.abs(stock.change).toFixed(2)}%`)}
           </div>
           <div style="display:flex;gap:4px;margin-top:2px;justify-content:flex-end;flex-wrap:wrap;">
             <div class="stock-cap">${stock.cap}</div>
             ${stock.divYield > 0 ? `<span class="div-badge">${stock.divYield.toFixed(2)}%</span>` : ''}
           </div>
         </div>
-        <div class="star-btn ${isStarred ? 'starred' : ''}"
-             data-star="${stock.ticker}" role="button" tabindex="0"
-             aria-label="${isStarred ? 'Retirer des favoris' : 'Ajouter aux favoris'}">
-          <svg width="14" height="14" viewBox="0 0 24 24"
-               fill="${isStarred ? '#f5c842' : 'none'}"
-               stroke="${isStarred ? '#f5c842' : 'currentColor'}" stroke-width="1.5">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-          </svg>
+        <div style="display:flex; flex-direction:column; gap:8px; align-items:center; justify-content:center;">
+          <div class="star-btn ${isStarred ? 'starred' : ''}"
+               data-star="${stock.ticker}" role="button" tabindex="0"
+               aria-label="${isStarred ? 'Retirer des favoris' : 'Ajouter aux favoris'}">
+            <svg width="14" height="14" viewBox="0 0 24 24"
+                 fill="${isStarred ? '#f5c842' : 'none'}"
+                 stroke="${isStarred ? '#f5c842' : 'currentColor'}" stroke-width="1.5">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+          </div>
+          <div class="alert-ring-btn" data-alert="${stock.ticker}" role="button" tabindex="0" aria-label="Alerte sur ${stock.ticker}" style="display:flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:50%; transition:all 0.2s;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="${hasAlert ? 'var(--gold)' : 'none'}" stroke="${hasAlert ? 'var(--gold)' : 'currentColor'}" stroke-width="1.5">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+          </div>
         </div>
       </div>`;
   }
@@ -135,7 +153,8 @@ export class UIController {
       avEl.innerHTML = `<img src="${stock.getLogoUrl(192)}"
         style="width:100%;height:100%;object-fit:cover;border-radius:14px;" alt="${stock.ticker}">`;
     }
-    const up = stock.getTrend() === 'up';
+    const trend = stock.getTrend();
+    const up = trend === 'up';
     const suspended = stock.isSuspended();
     if (el('modal-name'))   el('modal-name').textContent   = stock.name;
     if (el('modal-ticker')) el('modal-ticker').textContent = `${stock.ticker} · ${stock.getSectorLabel()}`;
@@ -144,21 +163,38 @@ export class UIController {
     const chEl = el('modal-change');
     if (chEl) {
       chEl.className = 'stock-change ' + (up ? 'up' : 'down');
+      const icon = up 
+        ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="vertical-align:middle;margin-right:4px;"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>`
+        : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="vertical-align:middle;margin-right:4px;"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>`;
       chEl.innerHTML = stock.change !== 0
-        ? `<span class="arrow-icon" aria-hidden="true">${up ? '▲' : '▼'}</span> ${Math.abs(stock.change).toFixed(2)}%`
+        ? `${icon} ${Math.abs(stock.change).toFixed(2)}%`
         : '—';
       chEl.style.justifyContent = 'flex-end';
+      chEl.style.alignItems = 'center';
     }
+
+    // Range Bar
+    const low = stock.low || stock.price;
+    const high = stock.high || stock.price;
+    const pct = window.Utility.getRangePercentage(stock.price, low, high);
+    if (el('modal-low'))  el('modal-low').textContent  = low.toLocaleString('fr-FR') + ' MAD';
+    if (el('modal-high')) el('modal-high').textContent = high.toLocaleString('fr-FR') + ' MAD';
+    if (el('modal-range-fill'))      el('modal-range-fill').style.width = pct + '%';
+    if (el('modal-range-indicator')) el('modal-range-indicator').style.left = pct + '%';
+
+    // Order Book
+    if (el('modal-bid')) el('modal-bid').textContent = stock.bid > 0 ? stock.bid.toLocaleString('fr-FR') : '—';
+    if (el('modal-ask')) el('modal-ask').textContent = stock.ask > 0 ? stock.ask.toLocaleString('fr-FR') : '—';
 
     const stEl = el('modal-stats');
     if (stEl) {
       stEl.innerHTML = [
-        ['VOLUME',        stock.vol],
+        ['VOLUME',        window.Utility.formatCompactNumber(stock.volume) + ' MAD'],
+        ['OUVERTURE',     stock.open > 0 ? stock.open.toLocaleString('fr-FR') + ' MAD' : '—'],
+        ['RÉFÉRENCE',     stock.refPrice > 0 ? stock.refPrice.toLocaleString('fr-FR') + ' MAD' : '—'],
         ['YTD',           stock.ytd !== 0 ? (stock.ytd > 0 ? '+' : '') + stock.ytd + '%' : '—'],
         ['CAPITALISATION', stock.cap !== '—' ? stock.cap + ' MAD' : '—'],
         ['DIVIDENDE',     stock.div > 0 ? stock.div + ' MAD (' + stock.divYield.toFixed(2) + '%)' : '—'],
-        ['FRÉQUENCE',     stock.divFreq],
-        ['PROCHAIN DIV',  stock.divDate],
       ].map(([l, v]) => `<div class="modal-stat"><div class="modal-stat-label">${l}</div><div class="modal-stat-val">${v}</div></div>`).join('');
     }
     el('stock-modal')?.classList.add('open');
@@ -260,29 +296,85 @@ export class UIController {
       </div>`;
   }
 
-  /** Creates a quick-reference card HTML */
-  static createQrCard(stock, index = 0) {
-    const up   = stock.getTrend() === 'up';
+  /** Creates a quick-reference card HTML (Widgets) */
+  static createQrCard(stock, index = 0, theme = '') {
+    const trend = stock.getTrend();
+    const up   = trend === 'up';
     const susp = stock.isSuspended();
+    const price = stock.price || stock.refPrice;
+    const name = stock.name.trim();
+    const ticker = stock.ticker.trim();
+    
+    const trendingIcon = up 
+      ? `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="margin-right:2px;"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>`
+      : `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="margin-right:2px;"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>`;
+
     return `
-      <div class="qr-card animate-stagger" data-ticker="${stock.ticker}" data-price="${stock.price}" role="button" tabindex="0" style="animation-delay: ${index * 0.04}s">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-          ${stock.getLogoHTML(28)}
-          <div style="min-width:0;">
-            <div class="qr-ticker">${stock.ticker}</div>
-            <div class="qr-name">${stock.name}</div>
+      <div class="qr-card fade-in ${theme ? 'theme-' + theme : ''}" 
+           data-ticker="${ticker}" data-price="${price}" role="button" tabindex="0" 
+           style="animation-delay: ${index * 0.04}s">
+        <div class="qr-card-info">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+            ${stock.getLogoHTML(28)}
+            <div style="min-width:0;">
+              <div class="qr-ticker">${ticker}</div>
+              <div class="qr-name">${name}</div>
+            </div>
           </div>
+          <div class="qr-price">${susp ? '—' : price.toLocaleString('fr-FR') + ' MAD'}</div>
+          <div class="qr-change ${up ? 'up' : 'down'}" style="display:flex;align-items:center;">
+            ${susp ? '' : trendingIcon}
+            ${susp ? 'Suspendu' : Math.abs(stock.change).toFixed(2) + '%'}
+          </div>
+          ${stock.volume > 0 ? `<div style="font-size:10px;color:var(--text3);margin-top:2px;">Vol: ${window.Utility.formatCompactNumber(stock.volume)}</div>` : ''}
         </div>
-        <div class="qr-price">${susp ? '—' : stock.price.toLocaleString('fr-FR') + ' MAD'}</div>
-        <div class="qr-change ${up ? 'up' : 'down'}">
-          <span aria-hidden="true">${susp ? '' : (up ? '▲' : '▼')}</span>
-          ${susp ? 'Suspendu' : Math.abs(stock.change).toFixed(2) + '%'}
-        </div>
-        <button class="qr-use-btn" data-calc="${stock.ticker}" data-price="${stock.price}">
+        <button class="qr-use-btn" data-calc="${ticker}" data-price="${price}">
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <path d="M5 12h14M12 5l7 7-7 7"/>
-          </svg> Calculer
+          </svg>
+          <span>Calculer</span>
         </button>
       </div>`;
+  }
+
+  /** Shows a Category Summary modal — Top / Median / Bottom stocks */
+  static showWidgetSummaryModal(title, color, top, bottom, median) {
+    const overlay = document.getElementById('widget-summary-overlay');
+    const panel   = document.getElementById('widget-summary-modal');
+    if (!overlay || !panel) return;
+
+    const row = (label, stock, accent) => `
+      <div class="wsm-row">
+        <div class="wsm-badge" style="color:${accent};border-color:${accent}22;">${label}</div>
+        <div class="wsm-stock">
+          ${stock.getLogoHTML(32)}
+          <div class="wsm-info">
+            <div class="wsm-ticker">${stock.ticker}</div>
+            <div class="wsm-name">${stock.name}</div>
+          </div>
+        </div>
+        <div class="wsm-price">
+          <div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:12px;">${stock.price > 0 ? stock.price.toLocaleString('fr-FR') + ' MAD' : '—'}</div>
+          <div class="wsm-change ${stock.change > 0 ? 'up' : stock.change < 0 ? 'down' : ''}">${stock.change !== 0 ? (stock.change > 0 ? '+' : '') + stock.change.toFixed(2) + '%' : '—'}</div>
+        </div>
+      </div>`;
+
+    panel.innerHTML = `
+      <div class="wsm-handle"></div>
+      <div class="wsm-header" style="border-bottom:2px solid ${color}44;margin-bottom:16px;padding-bottom:12px;">
+        <div class="wsm-title" style="color:${color};">${title}</div>
+        <div style="font-size:10px;color:var(--text3);font-family:'JetBrains Mono',monospace;letter-spacing:1px;">RÉSUMÉ DE MARCHÉ</div>
+      </div>
+      ${row('#1 MEILLEUR', top, color)}
+      ${row('MÉDIANE', median, 'var(--text2)')}
+      ${row('DERNIER', bottom, 'var(--red)')}
+      <button class="modal-close" id="wsm-close" style="width:100%;margin-top:16px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:6px">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+        Fermer
+      </button>`;
+
+    overlay.classList.add('open');
   }
 }

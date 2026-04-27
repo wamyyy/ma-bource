@@ -44,9 +44,53 @@ class WamyApp {
     this._renderWatchlist();
     this._renderDivList();
     this._renderQuickRef();
+    this._renderMarketWidgets(); // New top widgets
     this._searchStocks();
     this._updateMarketTimer();
     setInterval(() => this._updateMarketTimer(), 30000);
+  }
+
+  /**
+   * Syncs the entire application state with new JSON data.
+   * Finds stocks by Ticker and updates their properties.
+   */
+  syncMarketData(payload) {
+    if (!payload || !Array.isArray(payload.Data)) return;
+
+    payload.Data.forEach(item => {
+      const ticker = (item.Symbol || '').trim();
+      const stock = this._findStock(ticker);
+      if (stock) {
+        stock.update(item);
+      }
+    });
+
+    // Trigger full UI refresh
+    this._applyFilter();
+    this._renderMarketWidgets();
+    this._renderQuickRef();
+    if (this.currentPage === 'portfolio') this._renderPortfolio();
+    if (this.currentPage === 'favoris')   this._renderWatchlist();
+    if (this.currentPage === 'dividendes') this._renderDivList();
+  }
+
+  /**
+   * Renders the top horizontal widgets (Gainers, Losers, Most Active).
+   */
+  _renderMarketWidgets() {
+    const gContainer = document.getElementById('gainers-slider');
+    const lContainer = document.getElementById('losers-slider');
+    const aContainer = document.getElementById('active-slider');
+    if (!gContainer || !lContainer || !aContainer) return;
+
+    // Sort stocks for widgets
+    const gainers = [...this.stocks].filter(s => s.change > 0).sort((a,b) => b.change - a.change).slice(0, 8);
+    const losers  = [...this.stocks].filter(s => s.change < 0).sort((a,b) => a.change - b.change).slice(0, 8);
+    const active  = [...this.stocks].filter(s => s.volume > 0).sort((a,b) => b.volume - a.volume).slice(0, 8);
+
+    gContainer.innerHTML = gainers.map((s, i) => UIController.createQrCard(s, i, 'green')).join('');
+    lContainer.innerHTML = losers.map((s, i) => UIController.createQrCard(s, i, 'red')).join('');
+    aContainer.innerHTML = active.map((s, i) => UIController.createQrCard(s, i, 'gold')).join('');
   }
 
   // ══════════════════════════════════════════════════════
@@ -64,8 +108,10 @@ class WamyApp {
     const chEl = document.getElementById('masi-change');
     if (chEl) {
       chEl.className = up ? 'change-pos' : 'change-neg';
-      const arrow = up ? '▲' : '▼';
-      chEl.innerHTML = `<span class="arrow-icon">${arrow}</span> ${Math.abs(d.change).toFixed(2)}%  (${up ? '+' : ''}${d.points.toFixed(2)} pts)`;
+      const icon = up 
+        ? `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="vertical-align:middle;margin-right:2px;"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>`
+        : `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="vertical-align:middle;margin-right:2px;"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>`;
+      chEl.innerHTML = `${icon} ${Math.abs(d.change).toFixed(2)}%  (${up ? '+' : ''}${d.points.toFixed(2)} pts)`;
     }
 
     // Meta: YTD
@@ -262,6 +308,10 @@ class WamyApp {
         this._renderDivList();
         return;
       }
+
+      // Widget summary click
+      const summaryBtn = t.closest('[data-widget-summary]');
+      if (summaryBtn) { this._showWidgetSummary(summaryBtn.dataset.widgetSummary); return; }
     });
 
     // ── Input event delegation (debounced search) ──
@@ -843,6 +893,37 @@ class WamyApp {
   // ── Helper ──
   _findStock(ticker) {
     return this.stocks.find(s => s.ticker === ticker);
+  }
+
+  // ══════════════════════════════════════════════════════
+  //  WIDGET SUMMARY
+  // ══════════════════════════════════════════════════════
+  _showWidgetSummary(type) {
+    let sorted = [];
+    let title  = '';
+    let color  = 'var(--green)';
+
+    if (type === 'gainers') {
+      sorted = [...this.stocks].filter(s => s.change > 0).sort((a,b) => b.change - a.change);
+      title  = 'Top Hausses';
+      color  = 'var(--green)';
+    } else if (type === 'losers') {
+      sorted = [...this.stocks].filter(s => s.change < 0).sort((a,b) => a.change - b.change);
+      title  = 'Top Baisses';
+      color  = 'var(--red)';
+    } else if (type === 'active') {
+      sorted = [...this.stocks].filter(s => s.volume > 0).sort((a,b) => b.volume - a.volume);
+      title  = 'Plus Actifs';
+      color  = 'var(--gold)';
+    }
+
+    if (!sorted.length) { UIController.showToast('Pas de données disponibles'); return; }
+
+    const top    = sorted[0];
+    const bottom = sorted[sorted.length - 1];
+    const median = sorted[Math.floor(sorted.length / 2)];
+
+    UIController.showWidgetSummaryModal(title, color, top, bottom, median);
   }
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "WAMY — Bourse de Casablanca",
-  "short_name": "WAMY",
+  "short_name": "MA-Bourse",
   "description": "Suivez les actions de la Bourse de Casablanca en temps réel.",
   "start_url": "index.html",
   "display": "standalone",

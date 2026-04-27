@@ -25,6 +25,7 @@
     href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500;700&display=swap"
     rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
   <style>
     /* ════════════════════════════════════════════
    BOURSEDATA MAROC — style.css
@@ -780,6 +781,8 @@
       transition: all 0.2s;
       position: relative;
       overflow: hidden;
+      content-visibility: auto;
+      contain-intrinsic-size: 0 64px;
     }
 
     .stock-row.suspended {
@@ -1124,6 +1127,37 @@
       font-family: 'JetBrains Mono', monospace;
     }
 
+    .modal-action-btn {
+      padding: 14px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--green) 0%, #0fa84e 100%);
+      border: none;
+      color: #070d0a;
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .modal-action-btn:active {
+      transform: scale(0.97);
+      opacity: 0.9;
+    }
+
+    .modal-action-btn svg {
+      stroke: #070d0a;
+      stroke-width: 2.5px;
+    }
+
+    .widget-title svg {
+      flex-shrink: 0;
+    }
+
     .modal-close {
       width: 100%;
       padding: 14px;
@@ -1145,6 +1179,72 @@
     .modal-close:active {
       transform: scale(0.97);
     }
+
+    /* ── WIDGET SUMMARY MODAL ── */
+    .wsm-panel { padding: 20px; }
+    .wsm-handle {
+      width: 36px; height: 4px;
+      background: var(--border2);
+      border-radius: 2px;
+      margin: 0 auto 16px;
+    }
+    .wsm-header { display: flex; flex-direction: column; gap: 2px; }
+    .wsm-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 18px;
+    }
+    .wsm-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .wsm-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border: 1px solid currentColor;
+      border-radius: 6px;
+      padding: 3px 6px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .wsm-stock {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      min-width: 0;
+    }
+    .wsm-info { min-width: 0; }
+    .wsm-ticker {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 12px;
+      color: var(--text);
+    }
+    .wsm-name {
+      font-size: 11px;
+      color: var(--text3);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .wsm-price {
+      text-align: right;
+      flex-shrink: 0;
+    }
+    .wsm-change {
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+    }
+    .wsm-change.up   { color: var(--green); }
+    .wsm-change.down { color: var(--red); }
 
     /* ── TOAST ── */
     .toast {
@@ -1431,34 +1531,36 @@
     .qr-card {
       flex-shrink: 0;
       scroll-snap-align: start;
-      width: 150px;
+      width: 170px;
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
-      padding: 14px 12px;
-      cursor: pointer;
       transition: all 0.18s;
       display: flex;
+      flex-direction: row;
+      align-items: stretch;
+      overflow: hidden;
+    }
+
+    .qr-card-info {
+      flex: 1;
+      padding: 12px;
+      display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 5px;
+      min-width: 0;
     }
 
     .qr-card:active {
-      transform: scale(0.95);
+      transform: scale(0.98);
       border-color: var(--border2);
-      background: var(--card2);
-    }
-
-    .qr-card.selected {
-      border-color: var(--green);
-      background: var(--green-dim);
-      box-shadow: 0 0 0 1px var(--green);
     }
 
     .qr-ticker {
       font-size: 13px;
       font-weight: 700;
       font-family: 'JetBrains Mono', monospace;
+      color: var(--gold);
     }
 
     .qr-name {
@@ -1483,33 +1585,42 @@
       font-family: 'JetBrains Mono', monospace;
     }
 
-    .qr-change.up {
-      color: var(--green);
-    }
-
-    .qr-change.down {
-      color: var(--red);
-    }
+    .qr-change.up { color: var(--green); }
+    .qr-change.down { color: var(--red); }
 
     .qr-use-btn {
-      width: 100%;
-      padding: 6px 0;
-      border-radius: 6px;
-      background: var(--green-dim);
-      border: 1px solid var(--border2);
-      color: var(--green);
-      font-family: 'Syne', sans-serif;
-      font-size: 11px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.15s;
+      width: 32px;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 4px;
+      gap: 10px;
+      background: linear-gradient(to bottom, var(--green) 0%, #0fa84e 100%);
+      border: none;
+      border-left: 1px solid var(--border);
+      color: #070d0a;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .qr-use-btn span {
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      font-family: 'Syne', sans-serif;
+      font-size: 9px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .qr-use-btn svg {
+      width: 12px;
+      height: 12px;
+      stroke-width: 3px;
     }
 
     .qr-use-btn:active {
+      opacity: 0.8;
       transform: scale(0.96);
     }
 
@@ -3867,6 +3978,242 @@
         transform: translateX(-50%) translateY(0);
       }
     }
+    /* ── MARKET SLIDERS ── */
+    .market-widgets {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 20px;
+      padding: 4px 0;
+    }
+
+    .widget-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: rgba(255,255,255,0.02);
+      padding: 10px 6px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      min-width: 0;
+    }
+
+    .widget-title {
+      font-size: 9px;
+      font-weight: 800;
+      color: var(--text3);
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      background: none;
+      border: none;
+      padding: 0;
+      margin: 0;
+      cursor: pointer;
+      outline: none;
+      transition: color 0.2s ease;
+    }
+    .widget-title:hover {
+      color: var(--text);
+    }
+    .market-slider {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding-bottom: 4px;
+    }
+    .market-slider::-webkit-scrollbar { display: none; }
+    
+    .qr-card.theme-green { border-left: 3px solid var(--green); background: linear-gradient(to right, rgba(52, 211, 120, 0.05), var(--card)); }
+    .qr-card.theme-red { border-left: 3px solid var(--red); background: linear-gradient(to right, rgba(244, 63, 94, 0.05), var(--card)); }
+    .qr-card.theme-gold { border-left: 3px solid var(--gold); background: linear-gradient(to right, rgba(245, 200, 66, 0.05), var(--card)); }
+
+    /* ── RANGE BAR ── */
+    .range-container {
+      margin: 16px 0;
+      padding: 0 4px;
+    }
+    .range-labels {
+      display: flex;
+      justify-content: space-between;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--text3);
+      margin-bottom: 6px;
+    }
+    .range-bar-bg {
+      height: 6px;
+      background: var(--bg3);
+      border-radius: 3px;
+      position: relative;
+    }
+    .range-bar-fill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      background: var(--green);
+      border-radius: 3px;
+      opacity: 0.3;
+    }
+    .range-indicator {
+      position: absolute;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 12px;
+      height: 12px;
+      background: var(--green);
+      border: 2px solid var(--bg);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--green-glow);
+    }
+
+    /* ── ORDER BOOK ── */
+    .order-book {
+      margin-top: 16px;
+      background: var(--bg3);
+      border-radius: 12px;
+      padding: 12px;
+      border: 1px solid var(--border);
+    }
+    .order-book-title {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text3);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      text-align: center;
+      letter-spacing: 1px;
+    }
+    .order-book-grid {
+      display: grid;
+      grid-template-columns: 1fr 1px 1fr;
+      gap: 12px;
+      align-items: center;
+    }
+    .ob-side {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .ob-label {
+      font-size: 10px;
+      color: var(--text3);
+      text-align: center;
+      margin-bottom: 2px;
+    }
+    .ob-val {
+      font-size: 16px;
+      font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+      text-align: center;
+    }
+    .ob-buy { color: var(--green); }
+    .ob-sell { color: var(--red); }
+    .ob-divider {
+      width: 1px;
+      height: 24px;
+      background: var(--border);
+    }
+    .chart-pill {
+      font-size: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 4px 8px;
+      border-radius: 6px;
+      color: var(--text3);
+      background: var(--card2);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      border: 1px solid var(--border);
+    }
+
+    .chart-pill.active {
+      color: #fff;
+      background: var(--bg3);
+      border-color: var(--gold);
+    }
+    .offline-banner {
+      background: #f97316;
+      color: #fff;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      text-align: center;
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      height: 0;
+      overflow: hidden;
+      transition: height 0.3s ease, padding 0.3s;
+      padding-top: 0;
+      padding-bottom: 0;
+    }
+    .offline-banner.active {
+      height: 32px;
+      padding-top: 8px;
+      padding-bottom: 8px;
+    }
+    .flash-green { animation: flashG 0.6s ease; }
+    .flash-red { animation: flashR 0.6s ease; }
+    @keyframes flashG {
+      0%, 100% { background: transparent; }
+      50% { background: rgba(52, 211, 120, 0.25); }
+    }
+    @keyframes flashR {
+      0%, 100% { background: transparent; }
+      50% { background: rgba(244, 63, 94, 0.25); }
+    }
+    .health-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 4px;
+      line-height: 1.5;
+      letter-spacing: 0.03em;
+    }
+    .lang-toggle {
+      display: flex;
+      align-items: center;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+      gap: 0;
+      flex-shrink: 0;
+    }
+    .lang-btn {
+      background: transparent;
+      border: none;
+      color: var(--text2);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 4px 9px;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.04em;
+    }
+    .lang-btn.active {
+      background: var(--green);
+      color: #000;
+      border-radius: 20px;
+    }
+    .lang-btn:hover:not(.active) {
+      color: var(--text);
+    }
   </style>
 </head>
 
@@ -3931,6 +4278,11 @@
             <path d="m21 21-4.35-4.35" />
           </svg>
         </div>
+        <!-- Language Toggle: FR / عر -->
+        <div class="lang-toggle" id="lang-toggle" role="group" aria-label="Langue">
+          <button class="lang-btn active" data-lang="fr" onclick="window.I18n?.setLang('fr'); window.app?._setLang('fr');">FR</button>
+          <button class="lang-btn" data-lang="ar" onclick="window.I18n?.setLang('ar'); window.app?._setLang('ar');">عر</button>
+        </div>
         <div class="theme-toggle" role="button" tabindex="0" aria-label="Changer le thème">
           <div class="theme-toggle-knob">
             <svg id="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -3952,35 +4304,49 @@
       </div>
     </div>
 
+    <!-- ══════════ OFFLINE BANNER ══════════ -->
+    <div id="offline-banner" class="offline-banner">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <line x1="2" y1="2" x2="22" y2="22" />
+        <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55" />
+        <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39" />
+        <path d="M10.71 5.05A16 16 0 0 1 22.58 9" />
+        <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88" />
+        <path d="M8.53 16.11a6 6 0 0 1 6.95 0" />
+        <line x1="12" y1="20" x2="12.01" y2="20" />
+      </svg>
+      <span data-i18n="offline_msg">Vous êtes hors ligne. Affichage des dernières données en cache.</span>
+    </div>
+
     <!-- ══════════ NAV TABS ══════════ -->
     <div class="nav-tabs" id="nav-tabs">
-      <div class="tab active" data-tab="top"><span class="tab-dot"></span> Top</div>
+      <div class="tab active" data-tab="top"><span class="tab-dot"></span> <span data-i18n="tab_top">Top</span></div>
       <div class="tab" data-tab="tendances">
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
           stroke-linecap="round">
           <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
           <polyline points="17 6 23 6 23 12" />
-        </svg> Tendances
+        </svg> <span data-i18n="tab_tendances">Tendances</span>
       </div>
       <div class="tab" data-tab="hausses">
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
           stroke-linecap="round">
           <line x1="12" y1="19" x2="12" y2="5" />
           <polyline points="5 12 12 5 19 12" />
-        </svg> Hausses
+        </svg> <span data-i18n="tab_hausses">Hausses</span>
       </div>
       <div class="tab" data-tab="baisses">
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
           stroke-linecap="round">
           <line x1="12" y1="5" x2="12" y2="19" />
           <polyline points="19 12 12 19 5 12" />
-        </svg> Baisses
+        </svg> <span data-i18n="tab_baisses">Baisses</span>
       </div>
       <div class="tab" data-tab="rendement">
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
           stroke-linecap="round">
           <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-        </svg> Rendement
+        </svg> <span data-i18n="tab_rendement">Rendement</span>
       </div>
     </div>
 
@@ -3995,7 +4361,12 @@
             <div class="masi-label"><span class="pulse"></span> MASI INDEX</div>
             <div class="masi-value" id="masi-value">— —</div>
             <div class="masi-change">
-              <span class="change-neg" id="masi-change"><span class="arrow-icon">▼</span> —</span>
+              <span class="change-neg" id="masi-change">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="vertical-align:middle;margin-right:2px;">
+                  <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/>
+                </svg>
+                —
+              </span>
               <span class="masi-meta" id="masi-meta">—</span>
             </div>
             <div class="mini-chart">
@@ -4045,6 +4416,37 @@
             </div>
           </div>
 
+          <!-- Live Market Widgets -->
+          <div class="market-widgets fade-in">
+            <div class="widget-group">
+              <button class="widget-title" data-widget-summary="gainers">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5" style="vertical-align:middle;margin-right:4px;">
+                  <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>
+                </svg>
+                Top Hausses
+              </button>
+              <div class="market-slider" id="gainers-slider"></div>
+            </div>
+            <div class="widget-group">
+              <button class="widget-title" data-widget-summary="losers">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2.5" style="vertical-align:middle;margin-right:4px;">
+                  <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/>
+                </svg>
+                Top Baisses
+              </button>
+              <div class="market-slider" id="losers-slider"></div>
+            </div>
+            <div class="widget-group">
+              <button class="widget-title" data-widget-summary="active">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2.5" style="vertical-align:middle;margin-right:4px;">
+                  <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.5 3.5 6.5 1.5 2 2 4.5 1 7a5 5 0 1 1-8-4c.5 1 2 1 2 2z"/>
+                </svg>
+                Plus Actifs
+              </button>
+              <div class="market-slider" id="active-slider"></div>
+            </div>
+          </div>
+
           <div class="section-header">
             <div class="section-title">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -4083,15 +4485,15 @@
       <div class="page" id="page-search">
         <div class="search-content">
           <div style="padding-top:8px;">
-            <div class="page-title">Rechercher</div>
-            <div class="page-sub">78 sociétés cotées à la Bourse de Casablanca</div>
+            <div class="page-title" data-i18n="section_search">Rechercher</div>
+            <div class="page-sub" data-i18n="search_total_cos">78 sociétés cotées à la Bourse de Casablanca</div>
           </div>
           <div class="search-bar">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="11" cy="11" r="8" />
               <path d="m21 21-4.35-4.35" />
             </svg>
-            <input type="text" id="search-input" placeholder="Nom, ticker ou secteur (ex: ATW, Banques...)"
+            <input type="text" id="search-input" data-i18n="search_box_placeholder" placeholder="Nom, ticker ou secteur (ex: ATW, Banques...)"
               autocomplete="off">
           </div>
           <div class="stock-table" id="search-results"></div>
@@ -4102,8 +4504,8 @@
       <div class="page" id="page-outils">
         <div class="outils-content">
           <div style="padding-top:8px;">
-            <div class="page-title">Outils</div>
-            <div class="page-sub">Calculateurs · Indicateurs · Dividendes</div>
+            <div class="page-title" data-i18n="tools_hub">Outils</div>
+            <div class="page-sub" data-i18n="tools_subtitle">Calculateurs · Indicateurs · Dividendes</div>
           </div>
 
           <!-- ── TOOL HUB GRID ── -->
@@ -4119,8 +4521,8 @@
                   <line x1="8" y1="18" x2="16" y2="18"></line>
                 </svg>
               </div>
-              <div class="tool-hub-label">Calcul de Coût</div>
-              <div class="tool-hub-desc">Frais, TVA & total</div>
+              <div class="tool-hub-label" data-i18n="tools_calc">Calcul de Coût</div>
+              <div class="tool-hub-desc" data-i18n="tools_calc_desc">Frais, TVA &amp; total</div>
             </button>
             <button class="tool-hub-card" data-tool="indicators">
               <div class="tool-hub-icon">
@@ -4131,8 +4533,8 @@
                   <line x1="6" y1="20" x2="6" y2="14"></line>
                 </svg>
               </div>
-              <div class="tool-hub-label">Indicateurs</div>
-              <div class="tool-hub-desc">EPS, P/E, ROE…</div>
+              <div class="tool-hub-label" data-i18n="tools_indicators">Indicateurs</div>
+              <div class="tool-hub-desc" data-i18n="tools_indicators_desc">EPS, P/E, ROE…</div>
             </button>
             <button class="tool-hub-card" data-tool="dividends">
               <div class="tool-hub-icon">
@@ -4144,8 +4546,8 @@
                   <line x1="12" y1="2" x2="12" y2="6"></line>
                 </svg>
               </div>
-              <div class="tool-hub-label">Dividendes</div>
-              <div class="tool-hub-desc">Rendement & tri</div>
+              <div class="tool-hub-label" data-i18n="divLabel">Dividendes</div>
+              <div class="tool-hub-desc" data-i18n="tools_div_desc">Rendement &amp; tri</div>
             </button>
             <button class="tool-hub-card" data-tool="formulas">
               <div class="tool-hub-icon">
@@ -4157,18 +4559,8 @@
                   <path d="M14.5 9.5L9.5 14.5"></path>
                 </svg>
               </div>
-              <div class="tool-hub-label">Formules</div>
-              <div class="tool-hub-desc">Référence rapide</div>
-            </button>
-            <button class="tool-hub-card" data-tool="quickref">
-              <div class="tool-hub-icon">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-                </svg>
-              </div>
-              <div class="tool-hub-label">Actions Maroc</div>
-              <div class="tool-hub-desc">Données & tickers</div>
+              <div class="tool-hub-label" data-i18n="tools_formulas">Formules</div>
+              <div class="tool-hub-desc" data-i18n="tools_formulas_desc">Référence rapide</div>
             </button>
             <button class="tool-hub-card active-state-check" data-tool="alert-ipo" id="ipo-alert-card">
               <div class="tool-hub-icon">
@@ -4176,8 +4568,8 @@
                   <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
                 </svg>
               </div>
-              <div class="tool-hub-label">Alertes IPO</div>
-              <div class="tool-hub-desc" id="ipo-countdown-display" style="font-family:'JetBrains Mono',monospace;">Créer une alerte</div>
+              <div class="tool-hub-label" data-i18n="tools_ipo">Alertes IPO</div>
+              <div class="tool-hub-desc" id="ipo-countdown-display" style="font-family:'JetBrains Mono',monospace;" data-i18n="tools_ipo_create">Créer une alerte</div>
             </button>
             <button class="tool-hub-card active-state-check" data-tool="plus-value" id="btn-open-pv-modal">
               <div class="tool-hub-icon">
@@ -4185,8 +4577,8 @@
                   <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
                 </svg>
               </div>
-              <div class="tool-hub-label">Calcul de Plus-Value</div>
-              <div class="tool-hub-desc">Net après frais (2%) & taxes</div>
+              <div class="tool-hub-label" data-i18n="tools_plusvalues">Calcul de Plus-Value</div>
+              <div class="tool-hub-desc" data-i18n="tools_pv_desc">Net après frais (2%) &amp; taxes</div>
             </button>
             <button class="tool-hub-card active-state-check" data-tool="compare" id="btn-open-compare">
               <div class="tool-hub-icon" style="color:var(--gold);">
@@ -4194,8 +4586,8 @@
                   <path d="M18 20V10M12 20V4M6 20v-6"></path>
                 </svg>
               </div>
-              <div class="tool-hub-label">Comparateur</div>
-              <div class="tool-hub-desc">Analyse side-by-side</div>
+              <div class="tool-hub-label" data-i18n="tools_compare">Comparateur</div>
+              <div class="tool-hub-desc" data-i18n="tools_compare_desc">Analyse side-by-side</div>
             </button>
           </div>
 
@@ -4215,7 +4607,7 @@
                   <line x1="8" y1="10" x2="16" y2="10"></line>
                   <line x1="8" y1="14" x2="12" y2="14"></line>
                   <line x1="8" y1="18" x2="16" y2="18"></line>
-                </svg>Calcul de Coût</div>
+                </svg><span data-i18n="calc_cost_title">Calcul de Coût</span></div>
             </div>
             <div class="calc-card">
               <div class="calc-section-label">
@@ -4226,23 +4618,23 @@
                   <line x1="8" y1="10" x2="16" y2="10" />
                   <line x1="8" y1="14" x2="12" y2="14" />
                 </svg>
-                Calculateur de Coût
+                <span data-i18n="calc_main_title">Calculateur de Coût</span>
               </div>
-              <div style="font-size:12px;color:var(--text3);margin-bottom:16px;font-family:'JetBrains Mono',monospace;">
+              <div style="font-size:12px;color:var(--text3);margin-bottom:16px;font-family:'JetBrains Mono',monospace;" data-i18n="calc_main_desc">
                 Estimez le coût total incluant les frais bancaires</div>
               <div id="calc-selected-badge"
                 style="display:none;align-items:center;gap:8px;padding:10px 12px;background:var(--green-dim);border:1px solid var(--border2);border-radius:10px;margin-bottom:14px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text2);">
               </div>
               <div class="input-group">
-                <div class="input-label">Prix de l'action <span class="input-badge">MAD</span></div>
+                <div class="input-label"><span data-i18n="calc_price_label">Prix de l'action</span> <span class="input-badge">MAD</span></div>
                 <input type="number" class="calc-input" id="calc-price" placeholder="ex: 692.00" inputmode="decimal">
               </div>
               <div class="input-group">
-                <div class="input-label">Nombre d'actions <span class="input-badge">QTÉ</span></div>
+                <div class="input-label"><span data-i18n="calc_qty_label">Nombre d'actions</span> <span class="input-badge">QTÉ</span></div>
                 <input type="number" class="calc-input" id="calc-qty" placeholder="ex: 10" inputmode="numeric">
               </div>
               <div class="input-group" style="margin-top:4px;">
-                <div class="input-label">Frais courtier <span class="input-badge">%</span></div>
+                <div class="input-label"><span data-i18n="calc_fee_label">Frais courtier</span> <span class="input-badge">%</span></div>
                 <div class="broker-fee-row">
                   <div class="broker-btn active" data-fee="0.6">0.6%</div>
                   <div class="broker-btn" data-fee="0.8">0.8%</div>
@@ -4250,10 +4642,10 @@
                   <input type="number" class="calc-input broker-custom" id="broker-fee-custom" placeholder="%"
                     inputmode="decimal" step="0.1" min="0" max="5">
                 </div>
-                <div style="font-size:10px;color:var(--text3);font-family:'JetBrains Mono',monospace;margin-top:6px;">+
+                <div style="font-size:10px;color:var(--text3);font-family:'JetBrains Mono',monospace;margin-top:6px;" data-i18n="calc_tax_note">+
                   TVA 10% + Taxes Bourse/Maroclear ~0.1%</div>
               </div>
-              <div class="formula-box">
+              <div class="formula-box" data-i18n="calc_formula">
                 Prix × Qté + <strong id="fee-label">0.6%</strong> frais <span>=</span> Total
               </div>
             </div>
@@ -4263,7 +4655,7 @@
                   stroke-linecap="round">
                   <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
                 </svg>
-                Résultat du Calcul
+                <span data-i18n="calc_res_title">Résultat du Calcul</span>
               </div>
               <div class="result-empty" id="result-empty">
                 <div style="color:var(--text3); margin-bottom:12px;">
@@ -4276,17 +4668,17 @@
                     <line x1="8" y1="18" x2="16" y2="18"></line>
                   </svg>
                 </div>
-                <div>Entrez un prix et une quantité<br>pour calculer votre coût</div>
+                <div data-i18n="calc_res_empty">Entrez un prix et une quantité<br>pour calculer votre coût</div>
               </div>
               <div class="result-content" id="result-content">
-                <div class="result-row"><span class="result-key">Sous-total brut</span><span class="result-val"
+                <div class="result-row"><span class="result-key" data-i18n="calc_res_subtotal">Sous-total brut</span><span class="result-val"
                     id="res-subtotal" style="color:#f5c842;">—</span></div>
-                <div class="result-row"><span class="result-key" id="fees-label-result">Frais courtier</span><span
+                <div class="result-row"><span class="result-key" id="fees-label-result" data-i18n="calc_fee_label">Frais courtier</span><span
                     class="result-val" style="color:var(--red)" id="res-fees">—</span></div>
-                <div class="result-row"><span class="result-key">Prix unitaire</span><span class="result-val"
+                <div class="result-row"><span class="result-key" data-i18n="calc_res_unit">Prix unitaire</span><span class="result-val"
                     id="res-unit">—</span></div>
                 <div class="result-row" style="margin-top:8px;padding-top:12px;border-top:1px solid var(--border2);">
-                  <span class="result-key" style="color:var(--text);font-weight:700;font-size:13px;">TOTAL À
+                  <span class="result-key" style="color:var(--text);font-weight:700;font-size:13px;" data-i18n="calc_res_total">TOTAL À
                     PAYER</span>
                   <span class="result-val total" id="res-total">—</span>
                 </div>
@@ -4311,47 +4703,47 @@
                 </svg>Calculateur d'Indicateurs</div>
             </div>
             <div class="calc-card" style="margin-bottom:24px;">
-              <div style="font-size:12px;color:var(--text3);margin-bottom:16px;">Remplissez les champs pour l'analyse
+              <div style="font-size:12px;color:var(--text3);margin-bottom:16px;" data-i18n="ind_subtitle">Remplissez les champs pour l'analyse
                 fondamentale.</div>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
                 <div class="input-group">
-                  <div class="input-label">Nb d'Actions</div><input type="number" class="calc-input" id="ind-shares"
+                  <div class="input-label" data-i18n="ind_shares">Nb d'Actions</div><input type="number" class="calc-input" id="ind-shares"
                     placeholder="ex: 10000">
                 </div>
                 <div class="input-group">
-                  <div class="input-label">Prix de l'Action</div><input type="number" class="calc-input" id="ind-price"
+                  <div class="input-label" data-i18n="calc_price_label">Prix de l'Action</div><input type="number" class="calc-input" id="ind-price"
                     placeholder="MAD">
                 </div>
                 <div class="input-group">
-                  <div class="input-label">Dividende/Action</div><input type="number" class="calc-input" id="ind-div"
+                  <div class="input-label" data-i18n="divLabel">Dividende/Action</div><input type="number" class="calc-input" id="ind-div"
                     placeholder="MAD">
                 </div>
                 <div class="input-group">
-                  <div class="input-label">Chiffre d'Affaires</div><input type="number" class="calc-input" id="ind-rev"
+                  <div class="input-label" data-i18n="ind_revenue">Chiffre d'Affaires</div><input type="number" class="calc-input" id="ind-rev"
                     placeholder="MAD">
                 </div>
                 <div class="input-group">
-                  <div class="input-label">Dépenses</div><input type="number" class="calc-input" id="ind-exp"
+                  <div class="input-label" data-i18n="ind_expenses">Dépenses</div><input type="number" class="calc-input" id="ind-exp"
                     placeholder="MAD">
                 </div>
                 <div class="input-group">
-                  <div class="input-label">Taxes</div><input type="number" class="calc-input" id="ind-tax"
+                  <div class="input-label" data-i18n="ind_taxes">Taxes</div><input type="number" class="calc-input" id="ind-tax"
                     placeholder="MAD">
                 </div>
                 <div class="input-group">
-                  <div class="input-label">Dette Totale</div><input type="number" class="calc-input" id="ind-debt"
+                  <div class="input-label" data-i18n="ind_debt">Dette Totale</div><input type="number" class="calc-input" id="ind-debt"
                     placeholder="MAD">
                 </div>
                 <div class="input-group">
-                  <div class="input-label">Fonds Propres</div><input type="number" class="calc-input" id="ind-equity"
+                  <div class="input-label" data-i18n="ind_equity">Fonds Propres</div><input type="number" class="calc-input" id="ind-equity"
                     placeholder="MAD">
                 </div>
                 <div class="input-group">
-                  <div class="input-label">Total des Actifs</div><input type="number" class="calc-input" id="ind-assets"
+                  <div class="input-label" data-i18n="ind_assets">Total des Actifs</div><input type="number" class="calc-input" id="ind-assets"
                     placeholder="MAD">
                 </div>
                 <div class="input-group">
-                  <div class="input-label">Val. Comptable/Act.</div><input type="number" class="calc-input" id="ind-bv"
+                  <div class="input-label" data-i18n="ind_bv">Val. Comptable/Act.</div><input type="number" class="calc-input" id="ind-bv"
                     placeholder="MAD">
                 </div>
               </div>
@@ -4396,21 +4788,21 @@
                   <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path>
                   <line x1="12" y1="18" x2="12" y2="22"></line>
                   <line x1="12" y1="2" x2="12" y2="6"></line>
-                </svg>Dividendes</div>
+                </svg><span data-i18n="divLabel">Dividendes</span></div>
             </div>
             <div class="div-summary-row">
               <div class="div-sum-card">
-                <div class="div-sum-label">PLUS HAUT</div>
+                <div class="div-sum-label" data-i18n="div_highest">PLUS HAUT</div>
                 <div class="div-sum-val" id="div-highest" style="color:var(--green);">—</div>
                 <div class="div-sum-ticker" id="div-highest-name">—</div>
               </div>
               <div class="div-sum-card">
-                <div class="div-sum-label">PLUS BAS</div>
+                <div class="div-sum-label" data-i18n="div_lowest">PLUS BAS</div>
                 <div class="div-sum-val" id="div-lowest" style="color:var(--red);">—</div>
                 <div class="div-sum-ticker" id="div-lowest-name">—</div>
               </div>
               <div class="div-sum-card">
-                <div class="div-sum-label">MOY. MARCHÉ</div>
+                <div class="div-sum-label" data-i18n="div_avg">MOY. MARCHÉ</div>
                 <div class="div-sum-val" id="div-avg" style="color:#f5c842;">—</div>
               </div>
             </div>
@@ -4419,7 +4811,7 @@
                 <circle cx="11" cy="11" r="8" />
                 <path d="m21 21-4.35-4.35" />
               </svg>
-              <input type="text" id="div-search" placeholder="Chercher une action…" autocomplete="off">
+              <input type="text" id="div-search" data-i18n="div_search" placeholder="Chercher une action…" autocomplete="off">
               <div class="qr-clear" id="div-clear" role="button" aria-label="Effacer">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
                   stroke-linecap="round">
@@ -4429,10 +4821,10 @@
               </div>
             </div>
             <div class="div-sort-row">
-              <div class="div-sort-btn active" id="btn-yield">Rendement ↓</div>
-              <div class="div-sort-btn" data-key="div">Dividende</div>
-              <div class="div-sort-btn" data-key="price">Prix</div>
-              <div class="div-sort-btn" data-key="name">Nom A-Z</div>
+              <div class="div-sort-btn active" id="btn-yield" data-i18n="div_sort_yield">Rendement ↓</div>
+              <div class="div-sort-btn" data-key="div" data-i18n="div_amount">Dividende</div>
+              <div class="div-sort-btn" data-key="price" data-i18n="modal_cours">Prix</div>
+              <div class="div-sort-btn" data-key="name" data-i18n="search_recent">Nom A-Z</div>
             </div>
             <div id="div-list"></div>
           </div>
@@ -4452,7 +4844,7 @@
                     d="M21.3 15.3l-3.6 3.6a2 2 0 0 1-2.8 0l-12-12a2 2 0 0 1 0-2.8l3.6-3.6a2 2 0 0 1 2.8 0l12 12a2 2 0 0 1 0 2.8z">
                   </path>
                   <path d="M14.5 9.5L9.5 14.5"></path>
-                </svg>Formules Clés</div>
+                </svg><span data-i18n="formulas_key_title">Formules Clés</span></div>
             </div>
             <div class="calc-card">
               <div style="display:flex;flex-direction:column;gap:16px;">
@@ -4578,8 +4970,8 @@
       <div class="page" id="page-portfolio">
         <div class="portfolio-content">
           <div style="padding-top:8px;">
-            <div class="page-title">Mon Portefeuille</div>
-            <div class="page-sub">Compte Bourse simulé</div>
+            <div class="page-title" data-i18n="port_title">Mon Portefeuille</div>
+            <div class="page-sub" data-i18n="port_subtitle">Compte Bourse simulé</div>
           </div>
 
           <!-- User card -->
@@ -4602,12 +4994,12 @@
           <!-- PWA Install Button -->
           <button class="login-btn-primary" id="btn-install-pwa" style="width: 100%; margin-top: 16px; margin-bottom: 24px; justify-content: center;">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:8px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-            Installer l'App
+            <span data-i18n="btn_install_app">Installer l'App</span>
           </button>
 
           <!-- Balance card -->
           <div class="port-balance-card">
-            <div class="port-balance-label">SOLDE TOTAL</div>
+            <div class="port-balance-label" data-i18n="port_balance_label">SOLDE TOTAL</div>
             <div class="port-balance-value" id="port-balance">—</div>
             <div class="port-pnl-row">
               <span class="port-pnl-badge up" id="port-pnl">+0.00%</span>
@@ -4616,7 +5008,7 @@
             <div class="port-balance-bars">
               <div class="port-bar-fill" id="port-bar-fill" style="width:65%"></div>
             </div>
-            <div class="port-balance-meta">Valeur de marché · Position ouverte</div>
+            <div class="port-balance-meta" data-i18n="port_balance_meta">Valeur de marché · Position ouverte</div>
             
             <!-- Portfolio History Graph -->
             <div style="margin-top:20px; height:80px; position:relative;">
@@ -4634,9 +5026,9 @@
                 <circle cx="5.5" cy="18.5" r="2.5" />
                 <circle cx="18.5" cy="18.5" r="2.5" />
               </svg>
-              Positions Ouvertes
+              <span data-i18n="port_positions_title">Positions Ouvertes</span>
             </div>
-            <div class="section-action" id="port-count">0 titres</div>
+            <div class="section-action" id="port-count"><span id="port-count-val">0</span> <span data-i18n="titres">titres</span></div>
           </div>
           <div id="portfolio-list"></div>
 
@@ -4647,7 +5039,7 @@
               <line x1="12" y1="5" x2="12" y2="19" />
               <line x1="5" y1="12" x2="19" y2="12" />
             </svg>
-            <span>Ajouter une action</span>
+            <span data-i18n="add">Ajouter une action</span>
           </div>
 
           <!-- Merged Favoris Section -->
@@ -4660,10 +5052,10 @@
                       points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
                   </svg>
                 </div>
-                <span class="fav-title">Mes Favoris</span>
+                <span class="fav-title" data-i18n="section_fav">Mes Favoris</span>
                 <span class="fav-count" id="fav-count">0</span>
               </div>
-              <span class="fav-hint">Actions suivies</span>
+              <span class="fav-hint" data-i18n="fav_hint">Actions suivies</span>
             </div>
             <div id="watchlist-container"></div>
           </div>
@@ -4680,7 +5072,7 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <polyline points="22,12 18,12 15,21 9,3 6,12 2,12" />
       </svg>
-      <span>Marché</span>
+      <span class="nav-label" data-i18n="nav_marche">Marché</span>
     </div>
     <div class="nav-item" id="nav-search" data-page="search" role="button" tabindex="0" aria-label="Chercher">
       <div class="nav-indicator"></div>
@@ -4688,7 +5080,7 @@
         <circle cx="11" cy="11" r="8" />
         <path d="m21 21-4.35-4.35" />
       </svg>
-      <span>Chercher</span>
+      <span class="nav-label" data-i18n="nav_search">Chercher</span>
     </div>
     <div class="nav-item" id="nav-outils" data-page="outils" role="button" tabindex="0" aria-label="Outils">
       <div class="nav-indicator"></div>
@@ -4696,7 +5088,7 @@
         <path
           d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
       </svg>
-      <span>Outils</span>
+      <span class="nav-label" data-i18n="nav_outils">Outils</span>
     </div>
     <div class="nav-item" id="nav-portfolio" data-page="portfolio" role="button" tabindex="0"
       aria-label="Mon Portefeuille">
@@ -4707,7 +5099,7 @@
         <line x1="12" y1="12" x2="12" y2="16" />
         <line x1="10" y1="14" x2="14" y2="14" />
       </svg>
-      <span>Portefeuille</span>
+      <span class="nav-label" data-i18n="nav_portfolio">Portefeuille</span>
     </div>
   </nav>
 
@@ -4722,7 +5114,7 @@
           <div class="modal-ticker" id="modal-ticker"></div>
         </div>
         <div>
-          <div style="font-size:10px;color:var(--text3);font-family:'JetBrains Mono',monospace;text-align:right;">COURS
+          <div style="font-size:10px;color:var(--text3);font-family:'JetBrains Mono',monospace;text-align:right;" data-i18n="modal_cours">COURS
           </div>
           <div id="modal-change"
             style="display:flex;justify-content:flex-end;font-size:16px;font-weight:800;margin-top:2px;"></div>
@@ -4730,12 +5122,61 @@
       </div>
       <div class="modal-price-big" id="modal-price"></div>
       
+      <!-- Session Range Bar -->
+      <div class="range-container" id="modal-range-container">
+        <div class="range-labels">
+          <span id="modal-low">—</span>
+          <span id="modal-high">—</span>
+        </div>
+        <div class="range-bar-bg">
+          <div class="range-bar-fill" id="modal-range-fill"></div>
+          <div class="range-indicator" id="modal-range-indicator"></div>
+        </div>
+      </div>
+
       <!-- Historical Chart Section -->
-      <div style="margin: 0 0 16px 0; padding: 0 16px; height: 180px; position: relative;">
-        <canvas id="stock-chart-canvas"></canvas>
+      <div style="margin: 0 0 16px 0; padding: 0 16px;">
+        <!-- Chart container -->
+        <div style="height: 180px; position: relative;">
+          <div id="tv-chart-container" style="width: 100%; height: 100%;"></div>
+        </div>
+        <!-- Controls -->
+        <div style="display:flex; justify-content:space-between; margin-top:8px;">
+          <div class="chart-time-pills" style="display:flex; gap:6px;">
+            <div class="chart-pill" data-range="1W" onclick="window.app._changeChartRange('1W')">1S</div>
+            <div class="chart-pill" data-range="1M" onclick="window.app._changeChartRange('1M')">1M</div>
+            <div class="chart-pill active" data-range="YTD" onclick="window.app._changeChartRange('YTD')">YTD</div>
+            <div class="chart-pill" data-range="1Y" onclick="window.app._changeChartRange('1Y')">1A</div>
+            <div class="chart-pill" data-range="MAX" onclick="window.app._changeChartRange('MAX')">MAX</div>
+          </div>
+          <div class="chart-type-pills" style="display:flex; gap:6px;">
+            <div class="chart-pill active" data-type="Line" onclick="window.app._changeChartType('Line')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+            </div>
+            <div class="chart-pill" data-type="Candlestick" onclick="window.app._changeChartType('Candlestick')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="5" width="6" height="14" rx="1"></rect><line x1="12" y1="2" x2="12" y2="5"></line><line x1="12" y1="19" x2="12" y2="22"></line></svg>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="modal-stats" id="modal-stats"></div>
+
+      <!-- Mini Order Book -->
+      <div class="order-book" id="modal-order-book">
+        <div class="order-book-title">Profondeur du Marché (Mini)</div>
+        <div class="order-book-grid">
+          <div class="ob-side">
+            <div class="ob-label">ACHAT (BID)</div>
+            <div class="ob-val ob-buy" id="modal-bid">—</div>
+          </div>
+          <div class="ob-divider"></div>
+          <div class="ob-side">
+            <div class="ob-label">VENTE (ASK)</div>
+            <div class="ob-val ob-sell" id="modal-ask">—</div>
+          </div>
+        </div>
+      </div>
         <div style="display:flex;gap:10px;margin-top:16px;">
           <button class="modal-action-btn" id="btn-modal-alert" style="flex:1;">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -4755,6 +5196,50 @@
 
   <div class="toast" id="toast"></div>
 
+  <!-- ══════════ ALERT MENU MODAL ══════════ -->
+  <div class="modal-overlay" id="price-alert-modal">
+    <div class="modal add-stock-modal-body">
+      <div class="modal-handle"></div>
+      <div class="add-stock-header">
+        <div class="add-stock-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:8px;">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+          <span id="alert-modal-title" data-i18n="modal_price_alert_title">Alerte de Prix</span>
+        </div>
+        <div class="add-stock-sub" id="alert-modal-subtitle" data-i18n="modal_push_notif">Recevez une notification push automatique</div>
+      </div>
+      
+      <div class="add-stock-inputs" style="margin-top:16px;">
+        <div class="input-group">
+          <div class="input-label"><span data-i18n="modal_target_price">Objectif de Prix</span> <span class="input-badge">MAD</span></div>
+          <input type="number" class="calc-input" id="alert-target-price" placeholder="Prix cible" data-i18n="placeholder_target_price" inputmode="decimal">
+        </div>
+      </div>
+      
+      <input type="hidden" id="alert-modal-ticker">
+      
+      <div style="display:flex;gap:10px;margin-top:24px;">
+        <button class="modal-action-btn" id="btn-save-alert" style="flex:2;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span data-i18n="btn_activate_alert">Activer l'alerte</span>
+        </button>
+        <button class="modal-action-btn" id="btn-delete-alert" style="flex:1; background:rgba(244, 63, 94, 0.1); color:var(--red); display:none;" data-i18n="btn_remove">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          Retirer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ WIDGET SUMMARY MODAL ══════════ -->
+  <div class="modal-overlay" id="widget-summary-overlay">
+    <div class="modal wsm-panel" id="widget-summary-modal">
+      <!-- Content injected by UIController.showWidgetSummaryModal -->
+    </div>
+  </div>
+
   <!-- ══════════ PLUS-VALUE CALCULATOR MODAL ══════════ -->
   <div class="modal-overlay" id="pv-modal">
     <div class="modal add-stock-modal-body">
@@ -4764,22 +5249,22 @@
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
             <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
           </svg>
-          Calcul de Plus-Value
+          <span data-i18n="modal_pv_title">Calcul de Plus-Value</span>
         </div>
-        <div class="add-stock-sub">Calculateur net d'impôt (TPCVM 15%)</div>
+        <div class="add-stock-sub" data-i18n="modal_pv_subtitle">Calculateur net d'impôt (TPCVM 15%)</div>
       </div>
       
       <div class="add-stock-inputs" style="margin-top:16px;">
         <div class="input-group">
-          <div class="input-label">Prix d'achat <span class="input-badge">MAD</span></div>
+          <div class="input-label"><span data-i18n="label_buy_price">Prix d'achat</span> <span class="input-badge">MAD</span></div>
           <input type="number" class="calc-input" id="pv-buy-price" placeholder="ex: 120.00" inputmode="decimal">
         </div>
         <div class="input-group">
-          <div class="input-label">Prix de vente <span class="input-badge">MAD</span></div>
+          <div class="input-label"><span data-i18n="label_sell_price">Prix de vente</span> <span class="input-badge">MAD</span></div>
           <input type="number" class="calc-input" id="pv-sell-price" placeholder="ex: 150.00" inputmode="decimal">
         </div>
         <div class="input-group">
-          <div class="input-label">Quantité</div>
+          <div class="input-label" data-i18n="label_qty">Quantité</div>
           <input type="number" class="calc-input" id="pv-quantity" placeholder="ex: 100" inputmode="numeric">
         </div>
       </div>
@@ -4787,29 +5272,29 @@
       <!-- Live Calculation Result -->
       <div id="pv-result-container" style="margin-top:24px; display:none;">
         <div style="background:var(--bg2); padding:16px; border-radius:12px; border:1px solid var(--border); text-align:center;">
-          <div style="font-size:12px; color:var(--text3); margin-bottom:4px; font-family:'Syne',sans-serif;">RESULTAT NET FINAL</div>
+          <div style="font-size:12px; color:var(--text3); margin-bottom:4px; font-family:'Syne',sans-serif;" data-i18n="res_net_final">RESULTAT NET FINAL</div>
           <div id="pv-net-result" style="font-size:32px; font-weight:800; font-family:'JetBrains Mono', monospace; color:var(--green);">0.00 MAD</div>
         </div>
         
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px;">
           <div style="padding:12px; background:var(--bg); border:1px solid var(--border2); border-radius:10px;">
-            <div style="font-size:10px; color:var(--text3); margin-bottom:2px;">Frais (Courtage)</div>
+            <div style="font-size:10px; color:var(--text3); margin-bottom:2px;" data-i18n="label_broker_fees">Frais (Courtage)</div>
             <div id="pv-total-fees" style="font-size:13px; font-weight:700; font-family:'JetBrains Mono', monospace;">0.00 MAD</div>
           </div>
           <div style="padding:12px; background:var(--bg); border:1px solid var(--border2); border-radius:10px;">
-            <div style="font-size:10px; color:var(--text3); margin-bottom:2px;">Taxe TPCVM (15%)</div>
+            <div style="font-size:10px; color:var(--text3); margin-bottom:2px;" data-i18n="label_tax_tpcvm">Taxe TPCVM (15%)</div>
             <div id="pv-total-tax" style="font-size:13px; font-weight:700; font-family:'JetBrains Mono', monospace;">0.00 MAD</div>
           </div>
         </div>
 
-        <div style="margin-top:12px; padding:10px; font-size:10px; color:var(--text3); font-family:'JetBrains Mono',monospace; line-height:1.4; border-top:1px dashed var(--border);">
-            ⚠️ <strong>Note CGT :</strong> L'impôt de 15% (TPCVM) est prélevé sur le profit net. Les frais de courtage sont déductibles de la base imposable au Maroc.
+        <div style="margin-top:12px; padding:10px; font-size:10px; color:var(--text3); font-family:'JetBrains Mono',monospace; line-height:1.4; border-top:1px dashed var(--border);" data-i18n="note_tax_msg">
+            L'impôt de 15% (TPCVM) est prélevé sur le profit net après déduction des frais de courtage.
         </div>
       </div>
 
       <button class="modal-close" style="margin-top:24px;width:100%" id="btn-modal-close-pv">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:6px"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        Fermer
+        <span data-i18n="close">Fermer</span>
       </button>
     </div>
   </div>
@@ -5138,7 +5623,9 @@
   </div>
 
   <!-- ══════════ ES6 MODULE ENTRY POINT ══════════ -->
+  <script src="js/I18n.js"></script>
   <script src="js/Utility.js"></script>
+  <script src="js/ChartController.js"></script>
   <script>
     // === PWA Installation Logic ===
     let pwaInstallPrompt = null;
@@ -5440,7 +5927,7 @@
         const sectorH = highlight(stock.getSectorLabel());
 
         return `
-      <div class="stock-row ${dir}${suspended ? ' suspended' : ''}"
+      <div class="stock-row ${dir}${suspended ? ' suspended' : ''} ${stock._flashClass || ''}"
            style="transition-delay: ${(index % 10) * 0.05}s"
            data-ticker="${stock.ticker}" role="button" tabindex="0"
            aria-label="${stock.name}, ${stock.ticker}, ${stock.getSectorLabel()}">
@@ -5461,9 +5948,10 @@
             ? '<span style="color:var(--text3);font-size:10px;">Suspendu</span>'
             : `<span class="arrow-icon" aria-hidden="true">${up ? '▲' : '▼'}</span> ${Math.abs(stock.change).toFixed(2)}%`}
           </div>
-          <div style="display:flex;gap:4px;margin-top:2px;justify-content:flex-end;flex-wrap:wrap;">
+          <div style="display:flex;gap:4px;margin-top:2px;justify-content:flex-end;flex-wrap:wrap;align-items:center;">
             <div class="stock-cap">${stock.cap}</div>
             ${stock.divYield > 0 ? `<span class="div-badge">${stock.divYield.toFixed(2)}%</span>` : ''}
+            ${typeof stock.getHealthScore === 'function' ? `<span class="health-badge" style="background:${stock.getHealthColor()}22;color:${stock.getHealthColor()};border:1px solid ${stock.getHealthColor()}44;" title="Score de santé financière">${stock.getHealthScore()}</span>` : ''}
           </div>
         </div>
         <div class="star-btn ${isStarred ? 'starred' : ''}"
@@ -5485,10 +5973,11 @@
         const container = document.getElementById(containerId);
         if (!container) return;
         if (!stocks || !stocks.length) {
-          container.innerHTML = `<div style="text-align:center;padding:40px 0;color:var(--text3);font-family:'JetBrains Mono',monospace;font-size:12px;">Aucun résultat trouvé</div>`;
+          container.innerHTML = `<div style="text-align:center;padding:40px 0;color:var(--text3);font-family:'JetBrains Mono',monospace;font-size:12px;">${T('no_results')}</div>`;
           return;
         }
         container.innerHTML = stocks.map((s, i) => UIController.createStockCard(s, watchlist.has(s.ticker), i, query)).join('');
+        I18n.applyToDOM(container);
       }
 
       /** Skeleton loading placeholders */
@@ -5565,12 +6054,12 @@
         const stEl = el('modal-stats');
         if (stEl) {
           stEl.innerHTML = [
-            ['VOLUME', stock.vol],
-            ['YTD', stock.ytd !== 0 ? (stock.ytd > 0 ? '+' : '') + stock.ytd + '%' : '—'],
-            ['CAPITALISATION', stock.cap !== '—' ? stock.cap + ' MAD' : '—'],
-            ['DIVIDENDE', stock.div > 0 ? stock.div + ' MAD (' + stock.divYield.toFixed(2) + '%)' : '—'],
-            ['FRÉQUENCE', stock.divFreq],
-            ['PROCHAIN DIV', stock.divDate],
+            [T('modal_volume'), stock.vol],
+            [T('modal_ytd'), stock.ytd !== 0 ? (stock.ytd > 0 ? '+' : '') + stock.ytd + '%' : '—'],
+            [T('modal_cap'), stock.cap !== '—' ? stock.cap + ' ' + T('mad') : '—'],
+            [T('modal_div'), stock.div > 0 ? stock.div + ' ' + T('mad') + ' (' + stock.divYield.toFixed(2) + '%)' : '—'],
+            [T('modal_freq'), stock.divFreq],
+            [T('modal_next_div'), stock.divDate],
           ].map(([l, v]) => `<div class="modal-stat"><div class="modal-stat-label">${l}</div><div class="modal-stat-val">${v}</div></div>`).join('');
         }
         
@@ -5586,72 +6075,7 @@
         }
 
         el('stock-modal')?.classList.add('open');
-        UIController.renderHistoricalChart(stock);
-      }
-
-      static renderHistoricalChart(stock) {
-        const canvas = document.getElementById('stock-chart-canvas');
-        if (!canvas) return;
-
-        // Cleanup existing chart if any
-        if (window.stockDetailChart) window.stockDetailChart.destroy();
-
-        // Generate 30 days of mock historical data based on current price
-        const labels = [];
-        const data = [];
-        let curr = stock.price;
-        const now = new Date();
-
-        for (let i = 29; i >= 0; i--) {
-          const d = new Date(now);
-          d.setDate(d.getDate() - i);
-          labels.push(d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }));
-          
-          // Random walk backwards
-          const vol = 0.015;
-          curr = curr * (1 + (Math.random() - 0.52) * vol); // Slight upward trend (0.52)
-          data.unshift(curr);
-        }
-        data[29] = stock.price; // Ensure last point is exactly current price
-
-        const up = stock.change >= 0;
-        const color = up ? '#34d378' : '#f43f5e';
-
-        window.stockDetailChart = new Chart(canvas, {
-          type: 'line',
-          data: {
-            labels: labels,
-            datasets: [{
-              label: 'Prix (MAD)',
-              data: data,
-              borderColor: color,
-              borderWidth: 2,
-              pointRadius: 0,
-              pointHoverRadius: 5,
-              tension: 0.3,
-              fill: true,
-              backgroundColor: (context) => {
-                const chart = context.chart;
-                const {ctx, chartArea} = chart;
-                if (!chartArea) return null;
-                const grad = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-                grad.addColorStop(0, up ? 'rgba(52, 211, 120, 0.2)' : 'rgba(244, 63, 94, 0.2)');
-                grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-                return grad;
-              }
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
-            scales: {
-              x: { grid: { display: false }, ticks: { color: '#4d6b58', font: { size: 9, family: 'JetBrains Mono' }, maxRotation: 0, autoSkip: true, maxTicksLimit: 6 } },
-              y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#4d6b58', font: { size: 9, family: 'JetBrains Mono' } } }
-            },
-            interaction: { mode: 'nearest', axis: 'x', intersect: false }
-          }
-        });
+        if (window.app) setTimeout(() => window.app._renderStockChart(stock.ticker), 10);
       }
 
       /** Creates a portfolio holding card showing position + P&L */
@@ -5707,7 +6131,22 @@
             <span>${stock.getSectorLabel()}</span>
             <span>${stock.price.toLocaleString('fr-FR')} MAD</span>
           </div>
-          <div class="div-date-badge">📅 ${stock.divDate}</div>
+          <div class="div-date-badge">
+            📅 ${stock.divDate}
+            ${(() => {
+              try {
+                const parts = stock.divDate.split('/');
+                if (parts.length === 3) {
+                  const d = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+                  if (!isNaN(d)) {
+                    const hijri = new Intl.DateTimeFormat('ar-MA-u-ca-islamic', {day:'numeric',month:'short',year:'numeric'}).format(d);
+                    return `<span style="font-size:9px;color:var(--text3);display:block;margin-top:1px;direction:rtl;">هـ ${hijri}</span>`;
+                  }
+                }
+              } catch(e){}
+              return '';
+            })()}
+          </div>
         </div>
         <div class="div-right">
           <div class="div-yield-big">${stock.divYield.toFixed(2)}%</div>
@@ -5793,6 +6232,8 @@
         this.filters = { sector: 'all', tab: 'top', query: '' };
         this._portfolio = [...MOCK_PORTFOLIO];   // user positions (synced to localStorage)
         this._addStockTicker = null;                  // selected ticker in add-stock modal
+        this._chartController = null;
+        this.currentChartTicker = null;
 
         this.currentPage = 'marche';
         this.isAnimating = false;
@@ -5815,6 +6256,15 @@
         this._registerServiceWorker();
         this._checkAuth();
         this._setupIntersectionObserver();
+        // Restore saved language and apply translations across the DOM
+        if (window.I18n) {
+          window.I18n.applyToDOM();
+          // Sync the lang-toggle button state
+          const savedLang = localStorage.getItem('wamy_lang') || 'fr';
+          document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.lang === savedLang);
+          });
+        }
       }
 
       _setupIntersectionObserver() {
@@ -5842,25 +6292,28 @@
       }
 
       _startApp() {
-        this._loadPortfolio();
-        this._renderMasiCard();
-        this._applyFilter();
-        this._renderWatchlist();
-        this._renderDivList();
-        this._renderQuickRef();
-        this._searchStocks();
-        this._updateMarketTimer();
-        setInterval(() => this._updateMarketTimer(), 30000);
-        this._updateIpoDisplay();
-        setInterval(() => this._updateIpoDisplay(), 1000);
+        UIController.renderSkeleton('stock-list', 8);
+        setTimeout(() => {
+          this._loadPortfolio();
+          this._renderMasiCard();
+          this._applyFilter();
+          this._renderWatchlist();
+          this._renderDivList();
+          this._renderQuickRef();
+          this._searchStocks();
+          this._updateMarketTimer();
+          setInterval(() => this._updateMarketTimer(), 30000);
+          this._updateIpoDisplay();
+          setInterval(() => this._updateIpoDisplay(), 1000);
 
-        setInterval(() => {
-          this._simulatePrices();
-        }, 30000);
-        
-        ['pv-buy-price', 'pv-sell-price', 'pv-quantity'].forEach(id => {
-          document.getElementById(id)?.addEventListener('input', () => this._calculatePlusValue());
-        });
+          setInterval(() => {
+            this._simulatePrices();
+          }, 30000);
+          
+          ['pv-buy-price', 'pv-sell-price', 'pv-quantity'].forEach(id => {
+            document.getElementById(id)?.addEventListener('input', () => this._calculatePlusValue());
+          });
+        }, 400); // Wait 400ms to show skeletons during JS startup latency
       }
 
       _simulatePrices() {
@@ -5875,6 +6328,11 @@
           const oldPrice = s.price;
           s.price = Math.max(0.01, s.price * (1 + change));
           s.change = ((s.price - oldPrice) / oldPrice) * 100;
+          
+          if (s.ticker !== 'SAM') {
+            s._flashClass = change >= 0 ? 'flash-green' : 'flash-red';
+            setTimeout(() => { s._flashClass = null; }, 1000);
+          }
 
           // Check Alerts
           if (alerts[s.ticker] && alerts[s.ticker].active) {
@@ -5972,19 +6430,106 @@
         });
       }
 
-      _togglePriceAlert(ticker) {
-        let alerts = JSON.parse(localStorage.getItem('wamy_price_alerts') || '{}');
+      _showPriceAlertModal(ticker) {
+        document.getElementById('stock-modal')?.classList.remove('open');
         const stock = this._findStock(ticker);
+        if (!stock) return;
+        
+        let alerts = JSON.parse(localStorage.getItem('wamy_price_alerts') || '{}');
+        const alertObj = alerts[ticker];
+        
+        const modal = document.getElementById('price-alert-modal');
+        document.getElementById('alert-modal-ticker').value = ticker;
+        document.getElementById('alert-modal-title').textContent = `Alerte : ${ticker}`;
+        
+        const inpt = document.getElementById('alert-target-price');
+        const delBtn = document.getElementById('btn-delete-alert');
+        const saveBtn = document.getElementById('btn-save-alert');
+        
+        if (alertObj && alertObj.active) {
+          inpt.value = alertObj.threshold;
+          delBtn.style.display = 'block';
+          saveBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Modifier l'alerte`;
+        } else {
+          inpt.value = stock.price;
+          delBtn.style.display = 'none';
+          saveBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Activer l'alerte`;
+        }
+        modal.classList.add('open');
+      }
+
+      _renderStockChart(ticker) {
+        this.currentChartTicker = ticker;
+        const s = this._findStock(ticker);
+        if (!s) return;
+        
+        if (!this._chartController) {
+          this._chartController = new ChartController('tv-chart-container');
+        }
+        this._changeChartRange('YTD'); // Defaults to YTD and Line implicitly via the pill dom state
+      }
+
+      _changeChartRange(range) {
+        document.querySelectorAll('.chart-time-pills .chart-pill').forEach(el => el.classList.remove('active'));
+        document.querySelector(`.chart-time-pills .chart-pill[data-range="${range}"]`)?.classList.add('active');
+        if (this.currentChartTicker && this._chartController) {
+          const s = this._findStock(this.currentChartTicker);
+          if (s) this._chartController.renderData(s.price, s.change, this._chartController.type, range);
+        }
+      }
+
+      _changeChartType(type) {
+        document.querySelectorAll('.chart-type-pills .chart-pill').forEach(el => el.classList.remove('active'));
+        document.querySelector(`.chart-type-pills .chart-pill[data-type="${type}"]`)?.classList.add('active');
+        if (this.currentChartTicker && this._chartController) {
+          const s = this._findStock(this.currentChartTicker);
+          if (s) this._chartController.renderData(s.price, s.change, type, this._chartController.range);
+        }
+      }
+
+      _savePriceAlert() {
+        const ticker = document.getElementById('alert-modal-ticker').value;
+        const targetPrice = parseFloat(document.getElementById('alert-target-price').value);
+        if (!ticker || isNaN(targetPrice)) return;
+        
+        let alerts = JSON.parse(localStorage.getItem('wamy_price_alerts') || '{}');
+        alerts[ticker] = { threshold: targetPrice, active: true };
+        localStorage.setItem('wamy_price_alerts', JSON.stringify(alerts));
+        
+        document.getElementById('price-alert-modal').classList.remove('open');
+        navigator.vibrate?.([30, 20, 60]);
+        UIController.showToast(`Alerte activée pour ${ticker} (${targetPrice} MAD)`);
+        
+        if ('serviceWorker' in navigator && window.Notification) {
+          Notification.requestPermission().then(perm => {
+            if (perm === 'granted') {
+              navigator.serviceWorker.ready.then(reg => {
+                reg.active?.postMessage({ type: 'UPDATE_ALERTS', alerts: alerts });
+              });
+            }
+          });
+        }
+        this._applyFilter();
+      }
+
+      _deletePriceAlert() {
+        const ticker = document.getElementById('alert-modal-ticker').value;
+        if (!ticker) return;
+        
+        let alerts = JSON.parse(localStorage.getItem('wamy_price_alerts') || '{}');
         if (alerts[ticker]) {
           delete alerts[ticker];
-          UIController.showToast('Alerte supprimée');
-        } else {
-          // Set threshold to +5% or -5% based on current trend? Let's just do +2% for demo
-          alerts[ticker] = { threshold: stock.price * 1.02, active: true };
-          UIController.showToast(`Alerte 🔔 activée pour ${ticker} (+2%)`);
+          localStorage.setItem('wamy_price_alerts', JSON.stringify(alerts));
         }
-        localStorage.setItem('wamy_price_alerts', JSON.stringify(alerts));
-        UIController.showStockModal(stock);
+        document.getElementById('price-alert-modal').classList.remove('open');
+        UIController.showToast(`Alerte supprimée pour ${ticker}`);
+        
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.ready.then(reg => {
+            reg.active?.postMessage({ type: 'UPDATE_ALERTS', alerts: alerts });
+          });
+        }
+        this._applyFilter();
       }
 
       _updatePortfolioHistory(totalValue) {
@@ -6329,10 +6874,29 @@
       // ══════════════════════════════════════════════════════
       //  CENTRALISED EVENT DELEGATION
       // ══════════════════════════════════════════════════════
+      _handleOffline() {
+        document.getElementById('offline-banner')?.classList.add('active');
+        this._updateMarketTimer();
+      }
+
+      _handleOnline() {
+        document.getElementById('offline-banner')?.classList.remove('active');
+        this._updateMarketTimer();
+      }
+
       _attachEventListeners() {
+        // Handle Offline State
+        window.addEventListener('offline', () => this._handleOffline());
+        window.addEventListener('online', () => this._handleOnline());
+
         // ── Global click delegation ──
         document.addEventListener('click', e => {
           const t = e.target;
+          
+          // Native Haptics System 
+          if (t.closest('button, .tab, .qr-card, .btn-icon, .action-btn, .chart-pill, [role="button"], .alert-ring-btn, .fav-action-btn, [data-star], .nav-item, .filter-chip')) {
+            navigator.vibrate?.(20);
+          }
 
           // IPO Event Handlers
           if (t.id === 'ipo-alert-card' || t.closest('#ipo-alert-card')) {
@@ -6377,12 +6941,24 @@
             this._exportPortfolioCSV(); return;
           }
 
-          // Price Alert toggle in modal
+          // Price Alert toggle in modal and rows
           if (t.id === 'btn-modal-alert' || t.closest('#btn-modal-alert')) {
             const tickerText = document.getElementById('modal-ticker')?.textContent || '';
             const ticker = tickerText.split(' · ')[0];
-            if (ticker) this._togglePriceAlert(ticker);
+            if (ticker) this._showPriceAlertModal(ticker);
             return;
+          }
+          const ringBtn = t.closest('.alert-ring-btn');
+          if (ringBtn) {
+            e.preventDefault(); e.stopPropagation();
+            this._showPriceAlertModal(ringBtn.dataset.alert);
+            return;
+          }
+          if (t.id === 'btn-save-alert' || t.closest('#btn-save-alert')) {
+            this._savePriceAlert(); return;
+          }
+          if (t.id === 'btn-delete-alert' || t.closest('#btn-delete-alert')) {
+            this._deletePriceAlert(); return;
           }
 
           // Login screen buttons
@@ -6876,6 +7452,7 @@
         this._savePortfolio();
         this._closeAddStockModal();
         this._renderPortfolio();
+        navigator.vibrate?.([30, 20, 60]);
         UIController.showToast(`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;margin-bottom:2px"><polyline points="20 6 9 17 4 12"/></svg> ${ticker} ajouté au portefeuille !`);
       }
 
@@ -7243,6 +7820,24 @@
         try { localStorage.setItem('wamy_theme', this.isLight ? 'light' : 'dark'); } catch (e) { }
       }
 
+      _setLang(code) {
+        const LANGS = {
+          fr: { marche: 'Marché', search: 'Recherche', outils: 'Outils', portfolio: 'Portefeuille', favoris: 'Favoris' },
+          ar: { marche: 'السوق', search: 'بحث', outils: 'أدوات', portfolio: 'المحفظة', favoris: 'المفضلة' },
+          dr: { marche: 'السوق', search: 'بحث', outils: 'الوسايل', portfolio: 'البورطفوي', favoris: 'المفضلات' }
+        };
+        const lang = LANGS[code] || LANGS.fr;
+        const isRTL = (code === 'ar' || code === 'dr');
+        document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
+        document.documentElement.lang = code === 'ar' ? 'ar' : code === 'dr' ? 'ar-MA' : 'fr';
+        const navMap = { 'marche': lang.marche, 'search': lang.search, 'outils': lang.outils, 'portfolio': lang.portfolio, 'favoris': lang.favoris };
+        Object.entries(navMap).forEach(([page, label]) => {
+          const el = document.querySelector(`.nav-item[data-page="${page}"] .nav-label`);
+          if (el) el.textContent = label;
+        });
+        try { localStorage.setItem('wamy_lang', code); } catch(e) {}
+      }
+
       _loadTheme() {
         try {
           const savedTheme = localStorage.getItem('wamy_theme');
@@ -7281,20 +7876,28 @@
         const isOpen = isWeekday && total >= OPEN && total < CLOSE;
 
         let statusText, timeText;
+        
+        if (!navigator.onLine) {
+          statusText = T('market_status_offline');
+          timeText = T('market_data_cache');
+          UIController.updateMarketStatus(false, statusText, timeText);
+          return;
+        }
+
         if (isOpen) {
           const rem = CLOSE - total, rh = Math.floor(rem / 60), rm = rem % 60;
-          statusText = 'OUVERT';
-          timeText = `Ferme dans ${rh > 0 ? rh + 'h' : ''}${String(rm).padStart(2, '0')}min`;
+          statusText = T('market_status_open');
+          timeText = `${T('market_closes_in')} ${rh > 0 ? rh + 'h' : ''}${String(rm).padStart(2, '0')}min`;
         } else {
-          statusText = 'FERMÉ';
+          statusText = T('market_status_closed');
           const nextOpen = new Date(rabat);
           nextOpen.setHours(9, 30, 0, 0);
           if (total >= CLOSE || !isWeekday) nextOpen.setDate(nextOpen.getDate() + (day === 5 ? 3 : day === 6 ? 2 : 1));
           const diffMs = nextOpen - rabat;
           const diffH = Math.floor(diffMs / 3600000), diffM = Math.floor((diffMs % 3600000) / 60000);
           timeText = diffH < 24
-            ? `Ouvre dans ${diffH}h${String(diffM).padStart(2, '0')}min`
-            : `Ouvre ${['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'][nextOpen.getDay()]} 09:30`;
+            ? `${T('market_opens_in')} ${diffH}h${String(diffM).padStart(2, '0')}min`
+            : `${T('market_opens_in')} ${['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'][nextOpen.getDay()]} 09:30`;
         }
         UIController.updateMarketStatus(isOpen, statusText, timeText);
       }
